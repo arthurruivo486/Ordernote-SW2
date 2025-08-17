@@ -1,9 +1,8 @@
 <?php
-// productGroupController.php
 
 // Verificação robusta dos arquivos necessários
-$configPath = __DIR__ . '/../db/config.php';
-$conexaoPath = __DIR__ . '/../db/conexao.php';
+$configPath = __DIR__ . '/../config/config.php';
+$conexaoPath = __DIR__ . '/../config/conexao.php';
 $modelPath = __DIR__ . '/../models/productGroupModel.php';
 
 if (!file_exists($configPath)) {
