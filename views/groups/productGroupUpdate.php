@@ -1,32 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Grupo de Produtos</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editar Grupo de Produtos</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f0f1f3;
+    }
+    .card-edit {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 5rem auto;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Editar Grupo de Produtos</h1>
-        <?php 
-        require "../../controllers/productGroupController.php";
-        $controller = new ProductGroupController();
-        $group = $controller->buscarUm($_GET['id']);
-        ?>
-        <form action="../../controllers/productGroupController.php" method="POST">
-            <div class="form-group">
-                <label for="name">Nome:</label>
-                <input type="text" class="form-control" id="name" name="name" required value="<?php echo $group['name'];?>">
-            </div>
-            <div class="form-group">
-                <label for="icon">Ícone:</label>
-                <input type="text" class="form-control" id="icon" name="icon" value="<?php echo $group['icon'];?>">
-            </div>
-            <input type="hidden" name="id" value="<?php echo $_GET['id'] ?>">
-            <input type="hidden" name="acao" value="editar">
-            <button class="btn btn-primary" type="submit">Atualizar</button>
-        </form>
-    </div>
+
+<div class="container">
+  <?php 
+    require "../../controllers/productGroupController.php";
+    $controller = new ProductGroupController();
+    $group = $controller->buscarUm($_GET['id']);
+  ?>
+
+  <div class="card-edit">
+    <h3 class="fw-bold text-warning mb-4">
+      <i class="bi bi-pencil-square me-2"></i> 
+      Editar Grupo de Produtos
+    </h3>
+
+    <form action="../../controllers/productGroupController.php" method="POST">
+      <div class="mb-3">
+        <label for="name" class="form-label">Nome</label>
+        <input type="text" class="form-control" id="name" name="name" required 
+               value="<?php echo $group['name']; ?>">
+      </div>
+
+      <div class="mb-3">
+        <label for="icon" class="form-label">Ícone</label>
+        <input type="text" class="form-control" id="icon" name="icon" 
+               value="<?php echo $group['icon']; ?>">
+      </div>
+
+      <input type="hidden" name="id" value="<?php echo $_GET['id'] ?>">
+      <input type="hidden" name="acao" value="editar">
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="index.php" class="btn btn-secondary">
+          <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
+        </a>
+        <button class="btn btn-warning text-dark" type="submit">
+  <i class="bi bi-check-circle me-1"></i> Atualizar
+</button>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
