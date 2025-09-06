@@ -1,24 +1,28 @@
 class User{
-    private $conn;
-    private $table = 'users';
+    private $pdo;
 
-    public function __construct(){
-        $database = new Database();
-        $this->conn = $database->getConnection();
-    }
-}
-
-public function login($email, $senha){
-    $query = "SELECT * FROM " . $this->table . " WHERE email = :email LIMIT 1";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(":email", $email);
-    $stmt->execute();
-
-    if($stmt->rowCount() > 0){
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        if(password_verify($senha, $user['senha'])){
-            return $user;
+    public function __construct() {
+        try {
+           $this->pdo = new PDO("mysql:host=localhost;dbname="ordernote-db", "root", "");
+           $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch() {
+           die("Erro de conexão: " . $e->getMessage()); 
         }
     }
-    return false;
+
+    public function login($email, $senha) {
+        $sql = "SELECT * FROM users WHERE email = :email AND status = 'active' LIMIT 1";
+        stmt = $this->pdo->prepare($sql);
+        stmt->bindValue(":email", $email);
+        stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (password_verify($senha, $user['password_hash'])) {
+           return $user;
+        }
+     }
+     return false;
+   }
 }

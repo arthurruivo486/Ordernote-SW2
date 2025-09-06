@@ -1,7 +1,7 @@
 $controller = $_GET['controller'] ?? 'login';
 $action = $_GET['action'] ?? 'index';
 
-require_once __DIR__ . '/app/controllers/loginCController.php';
+require_once __DIR__ . '/app/controllers/LoginController.php';
 
 $controllerClass = ucfirst($controller) . "Controller";
 $controllerInstance = new $controllerClass();
