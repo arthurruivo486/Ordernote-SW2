@@ -1,3 +1,4 @@
+<?php
 $controller = $_GET['controller'] ?? 'login';
 $action = $_GET['action'] ?? 'index';
 
@@ -11,3 +12,5 @@ if(method_exists($controllerInstance, $action)) {
 } else {
     echo "Ação não encontrada.";
 }
+
+?>
