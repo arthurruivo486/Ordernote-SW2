@@ -12,10 +12,10 @@ class User{
     }
 
     public function login($email, $senha) {
-        $sql = "SELECT * FROM users WHERE email = :email AND status = 'active' LIMIT 1";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(":email", $email);
-        $stmt->execute();
+      $sql = "SELECT * FROM user WHERE email = :email AND status = 'active' LIMIT 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->bindValue(":email", $email);
+      $stmt->execute();
 
         if ($stmt->rowCount() > 0) {
           $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -26,5 +26,26 @@ class User{
          }
           return false;
       }
+    public function createUser($name, $email, $senha){
+      $check = $this->pdo->prepare("SELECT id FROM user WHERE email = :email LIMIT 1");   
+      $check->bindValue(":email", $email);  
+      $check->execute();  
+      
+      if ($check->rowCount() > 0){
+         return false;
+      }
+
+      $hash = password_hash($senha, PASSWORD_DEFAULT);
+
+      $sql = "INSERT INTO user (name, email, password_hash, status, role) 
+            VALUES (:name, :email, :password_hash, 'active', 'user')";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->bindValue(":name", $name);
+      $stmt->bindValue(":email", $email);
+      $stmt->bindValue(":password_hash", $hash);
+
+      return $stmt->execute();
+    }
    }
 ?>
