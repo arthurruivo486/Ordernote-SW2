@@ -8,7 +8,7 @@
 </head>
 
 <body>
-    <form action="index.php?controller=user&action=store" method="post">
+    <form action="index.php?controller=register&action=store" method="post">
         <Label>Nome: </Label>
         <input type="text" name="text" required>
         <br>

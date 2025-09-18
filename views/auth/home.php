@@ -1,9 +1,10 @@
 <?php
 session_start();
 if (!isset($_SESSION['usuario'])) {
-    header("Location: index.php?controller=login&action=index");
+    header("Location: /index.php?controller=login&action=index");
     exit;
 }
+echo "Bem-vindo, " . $_SESSION['usuario'];
 ?>
 
 <!DOCTYPE html>
