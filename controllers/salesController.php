@@ -41,17 +41,6 @@ class SalesController {
         }
     }
 
-    // Adicione este método para buscar os grupos
-    public function buscarGrupos() {
-        try {
-            $pdo = Conexao::getInstance();
-            $groupModel = new SalesModel($pdo);
-            return $groupModel->getAllSales();
-        } catch (Exception $e) {
-            die("Erro ao buscar grupos: " . $e->getMessage());
-        }
-    }
-
     // ... o restante dos métodos existentes (index, add, edit, excluir, buscarUm)
     
     public function index() {
@@ -72,14 +61,14 @@ class SalesController {
     public function add() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
-                $this->sales->order_id    = $_POST['order_id'] ?? null;
-                $this->sales->customer_id    = $_POST['customer_id'] ?? null;
-                $this->sales->user_id    = $_POST['user_id'] ?? null;
+                $this->sales->order_id = $_POST['order_id'] ?? null;
+                $this->sales->customer_id = $_POST['customer_id'] ?? null;
+                $this->sales->user_id = $_POST['user_id'] ?? null;
                 $this->sales->total_amount = $_POST['total_amount'] ?? 0;
-                $this->sales->payment_method   = $_POST['payment_method'] ?? '';
-                $this->sales->status       = $_POST['status'] ?? '';
+                $this->sales->payment_method = $_POST['payment_method'] ?? '';
+                $this->sales->status = $_POST['status'] ?? '';
 
-                if (empty($this->sales->name)) {
+                if (empty($this->sales->addSales)) {
                     throw new Exception("O nome da compra é obrigatório.");
                 }
 
@@ -98,12 +87,13 @@ class SalesController {
     public function edit() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
-                $this->sales->order_id    = $_POST['order_id'] ?? null;
-                $this->sales->customer_id    = $_POST['customer_id'] ?? null;
-                $this->sales->user_id    = $_POST['user_id'] ?? null;
+                $this->sales->id = $_POST['id'] ?? 0;
+                $this->sales->order_id = $_POST['order_id'] ?? null;
+                $this->sales->customer_id = $_POST['customer_id'] ?? null;
+                $this->sales->user_id = $_POST['user_id'] ?? null;
                 $this->sales->total_amount = $_POST['total_amount'] ?? 0;
-                $this->sales->payment_method   = $_POST['payment_method'] ?? '';
-                $this->sales->status       = $_POST['status'] ?? '';
+                $this->sales->payment_method = $_POST['payment_method'] ?? '';
+                $this->sales->status = $_POST['status'] ?? '';
 
                 if (empty($this->sales->id) || empty($this->sales->name)) {
                     throw new Exception("Dados inválidos para edição.");
