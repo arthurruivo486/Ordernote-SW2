@@ -1,10 +1,10 @@
 <?php
 
-// Verificação robusta dos arquivos necessários
 $configPath = __DIR__ . '/../config/config.php';
 $conexaoPath = __DIR__ . '/../config/conexao.php';
 $modelPath   = __DIR__ . '/../models/salesModel.php';
-$groupModelPath = __DIR__ . '/../models/salesGroupModel.php'; // Nova verificação
+$modelPath   = __DIR__ . '/../models/productModel.php';
+$modelPath   = __DIR__ . '/../models/customerModel.php';
 
 if (!file_exists($configPath)) {
     die("Erro: Arquivo config.php não encontrado em: " . $configPath);
@@ -15,22 +15,21 @@ if (!file_exists($conexaoPath)) {
 if (!file_exists($modelPath)) {
     die("Erro: Arquivo salesModel.php não encontrado em: " . $modelPath);
 }
-if (!file_exists($groupModelPath)) {
-    die("Erro: Arquivo salesGroupModel.php não encontrado em: " . $groupModelPath);
-}
 
 require_once $configPath;
 require_once $conexaoPath;
 require_once $modelPath;
-require_once $groupModelPath; // Nova inclusão
 
-class SalesController {
+
+class SalesController
+{
     private $sales;
 
-    public function __construct() {
+    public function __construct()
+    {
         try {
             $pdo = Conexao::getInstance();
-            
+
             if (!Conexao::isConectado()) {
                 throw new Exception("Não foi possível estabelecer conexão com o banco de dados.");
             }
@@ -41,9 +40,8 @@ class SalesController {
         }
     }
 
-    // ... o restante dos métodos existentes (index, add, edit, excluir, buscarUm)
-    
-    public function index() {
+    public function index()
+    {
         try {
             $sales = $this->sales->getAllSales();
             $viewPath = __DIR__ . '/../views/sales/salesView.php';
@@ -54,11 +52,12 @@ class SalesController {
 
             include $viewPath;
         } catch (Exception $e) {
-            die("Erro ao carregar compras: " . $e->getMessage());
+            die("Erro ao carregar vendas: " . $e->getMessage());
         }
     }
 
-    public function add() {
+    public function add()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 $this->sales->order_id = $_POST['order_id'] ?? null;
@@ -68,15 +67,15 @@ class SalesController {
                 $this->sales->payment_method = $_POST['payment_method'] ?? '';
                 $this->sales->status = $_POST['status'] ?? '';
 
-                if (empty($this->sales->addSales)) {
-                    throw new Exception("O nome da compra é obrigatório.");
+                if (empty($this->sales->addSale)) {
+                    throw new Exception("O nome da venda é obrigatório.");
                 }
 
-                if ($this->sales->addSales()) {
+                if ($this->sales->addSale()) {
                     header("Location: ../views/sales/index.php");
                     exit();
                 } else {
-                    throw new Exception("Erro ao cadastrar a compra.");
+                    throw new Exception("Erro ao cadastrar a venda.");
                 }
             } catch (Exception $e) {
                 die("Erro: " . $e->getMessage());
@@ -84,7 +83,8 @@ class SalesController {
         }
     }
 
-    public function edit() {
+    public function edit()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 $this->sales->id = $_POST['id'] ?? 0;
@@ -95,15 +95,14 @@ class SalesController {
                 $this->sales->payment_method = $_POST['payment_method'] ?? '';
                 $this->sales->status = $_POST['status'] ?? '';
 
-                if (empty($this->sales->id) || empty($this->sales->name)) {
-                    throw new Exception("Dados inválidos para edição.");
+                if (empty($this->sales->id)) {
+                    throw new Exception("ID inválido para edição.");
                 }
-
-                if ($this->sales->updateSales()) {
+                if ($this->sales->updateSale()) {
                     header("Location: ../views/sales/index.php");
                     exit();
                 } else {
-                    throw new Exception("Erro ao atualizar compra.");
+                    throw new Exception("Erro ao atualizar venda.");
                 }
             } catch (Exception $e) {
                 die("Erro: " . $e->getMessage());
@@ -111,7 +110,8 @@ class SalesController {
         }
     }
 
-    public function excluir() {
+    public function excluir()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 $this->sales->id = $_POST['id'] ?? 0;
@@ -120,11 +120,11 @@ class SalesController {
                     throw new Exception("ID inválido para exclusão.");
                 }
 
-                if ($this->sales->deleteSales()) {
+                if ($this->sales->deleteSale()) {
                     header("Location: ../views/sales/index.php");
                     exit();
                 } else {
-                    throw new Exception("Erro ao excluir compra.");
+                    throw new Exception("Erro ao excluir venda.");
                 }
             } catch (Exception $e) {
                 die("Erro: " . $e->getMessage());
@@ -132,24 +132,50 @@ class SalesController {
         }
     }
 
-    public function buscarUm($id) {
+    public function buscarUm($id)
+    {
         try {
             if (empty($id)) {
                 throw new Exception("ID inválido.");
             }
-            return $this->sales->getSalesById($id);
+            return $this->sales->getSaleById($id);
         } catch (Exception $e) {
-            die("Erro ao buscar compra: " . $e->getMessage());
+            die("Erro ao buscar venda: " . $e->getMessage());
         }
+    }
+
+    public function buscarPorId($id)
+    {
+        if (empty($id)) {
+            throw new Exception("ID invalido");
+        }
+        return $this->sales->buscarPorId($id);
+    }
+
+    public function buscarProdutos()
+    {
+        return [
+            ['id' => 1, 'name' => 'Produto de Teste'],
+            ['id' => 2, 'name' => 'Outro Produto']
+        ];
+    }
+
+    // FAZER CONEXÃO COM O PRODUTOS E CLIENTES APÓS UNIFICAÇÃO DE BRANCH'S
+
+    public function buscarClientes()
+    {
+        return [
+            ['id' => 1, 'name' => 'Cliente Teste'],
+            ['id' => 2, 'name' => 'Outr Cliente']
+        ];
     }
 }
 
-// Processamento das ações
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $controller = new SalesController();
         $acao = $_POST['acao'] ?? '';
-        
+
         switch ($acao) {
             case 'incluir':
                 $controller->add();
