@@ -162,12 +162,15 @@ class SalesController
 
     // FAZER CONEXÃO COM O PRODUTOS E CLIENTES APÓS UNIFICAÇÃO DE BRANCH'S
 
-    public function buscarClientes()
-    {
+    public function buscarClientes(){
+        try{
         return [
             ['id' => 1, 'name' => 'Cliente Teste'],
             ['id' => 2, 'name' => 'Outr Cliente']
         ];
+        } catch(Exception $e) {
+            die("Erro ao buscar clientes: " . $e->getMessage());
+        }
     }
 }
 
