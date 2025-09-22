@@ -2,9 +2,9 @@
 
 $configPath = __DIR__ . '/../config/config.php';
 $conexaoPath = __DIR__ . '/../config/conexao.php';
-$modelPath   = __DIR__ . '/../models/salesModel.php';
-$modelPath   = __DIR__ . '/../models/productModel.php';
-$modelPath   = __DIR__ . '/../models/customerModel.php';
+$salesModel   = __DIR__ . '/../models/salesModel.php';
+//$modelPath   = __DIR__ . '/../models/productModel.php';
+//$modelPath   = __DIR__ . '/../models/customerModel.php';
 
 if (!file_exists($configPath)) {
     die("Erro: Arquivo config.php não encontrado em: " . $configPath);
@@ -12,13 +12,13 @@ if (!file_exists($configPath)) {
 if (!file_exists($conexaoPath)) {
     die("Erro: Arquivo conexao.php não encontrado em: " . $conexaoPath);
 }
-if (!file_exists($modelPath)) {
+if (!file_exists($salesModel)) {
     die("Erro: Arquivo salesModel.php não encontrado em: " . $modelPath);
 }
 
 require_once $configPath;
 require_once $conexaoPath;
-require_once $modelPath;
+require_once $salesModel;
 
 
 class SalesController
