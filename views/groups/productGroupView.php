@@ -35,7 +35,7 @@
       background: #fff;
       padding: 1.5rem;
       border-radius: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -51,16 +51,19 @@
       </div>
       <ul class="nav flex-column w-100 px-3">
         <li class="nav-item mb-2">
-          <a class="nav-link" href="../HTML/index.html"><i class="bi bi-grid me-2"></i>Home</a>
+          <a class="nav-link" href="../dashboard/HTML/index.html"><i class="bi bi-grid me-2"></i>Home</a>
         </li>
         <li class="nav-item mb-2">
-          <a class="nav-link" href="../HTML/vendas.html"><i class="bi bi-cart me-2"></i>Vendas</a>
+          <a class="nav-link" href="../sales/index.php"><i class="bi bi-cart me-2"></i>Vendas</a>
         </li>
         <li class="nav-item mb-2">
-          <a class="nav-link active" href="#"><i class="bi bi-box me-2"></i>Grupos</a>
+          <a class="nav-link active" href="#"><i class="bi bi-boxes me-2"></i>Grupos</a>
         </li>
         <li class="nav-item mb-2">
-          <a class="nav-link" href="../HTML/usuario.html"><i class="bi bi-people me-2"></i>Usuários</a>
+          <a class="nav-link" href="../products/index.php"><i class="bi bi-box me-2"></i>Produtos</a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link" href="../customers/index.php"><i class="bi bi-people me-2"></i>Clientes</a>
         </li>
       </ul>
     </div>
@@ -92,7 +95,7 @@
                 <a class="btn btn-warning btn-sm" href="productGroupUpdate.php?id=<?php echo $group['id']?>">
                   <i class="bi bi-pencil-square"></i> Editar
                 </a>
-                <a class="btn btn-danger btn-sm" href="productGroupDelete.php?id=<?php echo $group['id']?>">
+                <a class="btn btn-danger btn-sm" href="productGroupDelete.php?id=<?php echo $group['id']?>" onclick="return confirm('Deseja realmente excluir este grupo?');">
                   <i class="bi bi-trash"></i> Excluir
                 </a>
               </td>
