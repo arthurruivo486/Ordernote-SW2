@@ -79,13 +79,13 @@
         <div class="col-md-3">
           <div class="card-summary text-center">
             <p class="mb-1">total do dia $</p>
-            <h3>350</h3>
+            <h3 id="total-dia">0</h3>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card-summary text-center">
             <p class="mb-1">total de vendas</p>
-            <h3>10</h3>
+            <h3 id="total-vendas">0</h3>
           </div>
         </div>
         <div class="col-md-3">
@@ -107,17 +107,8 @@
         <div class="col-md-4">
           <div class="recent-orders">
             <h6 class="fw-bold">Ultimos pedidos</h6>
-            <div class="my-2 p-2 bg-dark text-white rounded d-flex justify-content-between">
-              <span>José xxxx-xxx</span><strong>$10,00</strong>
-            </div>
-            <div class="my-2 p-2 bg-dark text-white rounded d-flex justify-content-between">
-              <span>Rodrigo xxxx-xxx</span><strong>$60,00</strong>
-            </div>
-            <div class="my-2 p-2 bg-dark text-white rounded d-flex justify-content-between">
-              <span>Loren xxxx-xxx</span><strong>$30,00</strong>
-            </div>
-            <div class="my-2 p-2 bg-dark text-white rounded d-flex justify-content-between">
-              <span>José xxxx-xxx</span><strong>$100,00</strong>
+            <div id="ultimos-pedidos">
+              <!-- Os pedidos serão carregados aqui via JavaScript -->
             </div>
           </div>
         </div>
@@ -128,31 +119,85 @@
 
 <!-- Chart script -->
 <script>
-  const ctx = document.getElementById('salesChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'],
-      datasets: [{
-        label: 'Vendas',
-        data: [8, 12, 16, 20, 15, 13, 4],
-        backgroundColor: [
-          '#ced4da', '#adb5bd', '#6c757d', '#495057', '#343a40', '#212529', '#000'
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true
+async function carregarDashboard() {
+    try {
+        const response = await fetch('../api/dashboard.php');
+        const data = await response.json();
+       
+        if (data.success) {
+            document.getElementById('total-dia').textContent = parseFloat(data.total_dia).toFixed(2);
+            document.getElementById('total-vendas').textContent = data.total_vendas;
+           
+            const pedidosContainer = document.getElementById('ultimos-pedidos');
+            pedidosContainer.innerHTML = '';
+           
+            data.ultimos_pedidos.forEach(pedido => {
+                const nome = pedido.customer_name || 'Cliente';
+                const total = parseFloat(pedido.total_amount).toFixed(2);
+                const div = document.createElement('div');
+                div.className = 'my-2 p-2 bg-dark text-white rounded d-flex justify-content-between';
+                div.innerHTML = `<span>${nome}</span><strong>$${total}</strong>`;
+                pedidosContainer.appendChild(div);
+            });
+           
+            atualizarGrafico(data.vendas_semana);
         }
-      }
+    } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
     }
-  });
+}
+
+function atualizarGrafico(vendasSemana) {
+    const dias = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const diasPt = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+   
+    const dadosGrafico = [0, 0, 0, 0, 0, 0, 0];
+   
+    vendasSemana.forEach(dia => {
+        const index = dias.indexOf(dia.dia);
+        if (index !== -1) {
+            dadosGrafico[index] = dia.vendas;
+        }
+    });
+   
+    const dadosReordenados = [...dadosGrafico.slice(1), dadosGrafico[0]];
+    const labelsReordenados = [...diasPt.slice(1), diasPt[0]];
+   
+    const ctx = document.getElementById('salesChart').getContext('2d');
+   
+    if (window.salesChartInstance) {
+        window.salesChartInstance.destroy();
+    }
+   
+    window.salesChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labelsReordenados,
+            datasets: [{
+                label: 'Vendas',
+                data: dadosReordenados,
+                backgroundColor: [
+                    '#ced4da', '#adb5bd', '#6c757d', '#495057', '#343a40', '#212529', '#000'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', carregarDashboard);
+setInterval(carregarDashboard, 30000);
 </script>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
