@@ -1,10 +1,10 @@
 <?php
 
-$configPath = __DIR__ . '/../config/config.php';
-$conexaoPath = __DIR__ . '/../config/conexao.php';
-$salesModel   = __DIR__ . '/../models/salesModel.php';
-//$modelPath   = __DIR__ . '/../models/productModel.php';
-//$modelPath   = __DIR__ . '/../models/customerModel.php';
+$configPath     = __DIR__ . '/../config/config.php';
+$conexaoPath    = __DIR__ . '/../config/conexao.php';
+$salesModelPath = __DIR__ . '/../models/salesModel.php';
+$productModelPath = __DIR__ . '/../models/productModel.php';
+$customerModelPath = __DIR__ . '/../models/customerModel.php';
 
 if (!file_exists($configPath)) {
     die("Erro: Arquivo config.php não encontrado em: " . $configPath);
@@ -12,14 +12,21 @@ if (!file_exists($configPath)) {
 if (!file_exists($conexaoPath)) {
     die("Erro: Arquivo conexao.php não encontrado em: " . $conexaoPath);
 }
-if (!file_exists($salesModel)) {
-    die("Erro: Arquivo salesModel.php não encontrado em: " . $modelPath);
+if (!file_exists($salesModelPath)) {
+    die("Erro: Arquivo salesModel.php não encontrado em: " . $salesModelPath);
+}
+if (!file_exists($productModelPath)) {
+    die("Erro: Arquivo productModel.php não encontrado em: " . $productModelPath);
+}
+if (!file_exists($customerModelPath)) {
+    die("Erro: Arquivo customerModel.php não encontrado em: " . $customerModelPath);
 }
 
 require_once $configPath;
 require_once $conexaoPath;
-require_once $salesModel;
-
+require_once $salesModelPath;
+require_once $productModelPath;
+require_once $customerModelPath;
 
 class SalesController
 {
@@ -153,30 +160,30 @@ class SalesController
     public function buscarPorId($id)
     {
         if (empty($id)) {
-            throw new Exception("ID invalido");
+            throw new Exception("ID inválido");
         }
         return $this->sales->buscarPorId($id);
     }
 
-    public function buscarProdutos()
-    {
-        return [
-            ['id' => 1, 'name' => 'Produto de Teste'],
-            ['id' => 2, 'name' => 'Outro Produto']
-        ];
-    }
-
-    // FAZER CONEXÃO COM O PRODUTOS E CLIENTES APÓS UNIFICAÇÃO DE BRANCH'S
-
     public function buscarClientes()
     {
         try {
-            return [
-                ['id' => 1, 'name' => 'Cliente Teste'],
-                ['id' => 2, 'name' => 'Outr Cliente']
-            ];
+            $pdo = Conexao::getInstance();
+            $CustomerModel = new CustomerModel($pdo);
+            return $CustomerModel->getAllCustomers();
         } catch (Exception $e) {
             die("Erro ao buscar clientes: " . $e->getMessage());
+        }
+    }
+
+    public function buscarProdutos()
+    {
+        try {
+            $pdo = Conexao::getInstance();
+            $ProductModel = new ProductModel($pdo);
+            return $ProductModel->getAllProducts();
+        } catch (Exception $e) {
+            die("Erro ao buscar produtos: " . $e->getMessage());
         }
     }
 }
