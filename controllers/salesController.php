@@ -67,10 +67,6 @@ class SalesController
                 $this->sales->payment_method = $_POST['payment_method'] ?? '';
                 $this->sales->status = $_POST['status'] ?? '';
 
-                if (empty($this->sales->addSale)) {
-                    throw new Exception("O nome da venda é obrigatório.");
-                }
-
                 if ($this->sales->addSale()) {
                     header("Location: ../views/sales/index.php");
                     exit();
@@ -80,6 +76,16 @@ class SalesController
             } catch (Exception $e) {
                 die("Erro: " . $e->getMessage());
             }
+        }
+    }
+
+    public function listar()
+    {
+        try {
+            $dados = $this->sales->getAllSales();
+            return $dados ?: [];
+        } catch (Exception $e) {
+            die("Erro ao listar vendas: " . $e->getMessage());
         }
     }
 
@@ -162,13 +168,14 @@ class SalesController
 
     // FAZER CONEXÃO COM O PRODUTOS E CLIENTES APÓS UNIFICAÇÃO DE BRANCH'S
 
-    public function buscarClientes(){
-        try{
-        return [
-            ['id' => 1, 'name' => 'Cliente Teste'],
-            ['id' => 2, 'name' => 'Outr Cliente']
-        ];
-        } catch(Exception $e) {
+    public function buscarClientes()
+    {
+        try {
+            return [
+                ['id' => 1, 'name' => 'Cliente Teste'],
+                ['id' => 2, 'name' => 'Outr Cliente']
+            ];
+        } catch (Exception $e) {
             die("Erro ao buscar clientes: " . $e->getMessage());
         }
     }
