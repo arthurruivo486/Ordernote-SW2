@@ -7,4 +7,4 @@ define('DBNAME', 'ordernote-db');
 define('USER', 'root');
 define('PASSWORD', '');
 
-define('CHARSET','utf8');
+define('CHARSET','utf8mb4');
