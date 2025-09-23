@@ -3,8 +3,6 @@
 $configPath     = __DIR__ . '/../config/config.php';
 $conexaoPath    = __DIR__ . '/../config/conexao.php';
 $salesModelPath = __DIR__ . '/../models/salesModel.php';
-$productModelPath = __DIR__ . '/../models/productModel.php';
-$customerModelPath = __DIR__ . '/../models/customerModel.php';
 
 if (!file_exists($configPath)) {
     die("Erro: Arquivo config.php não encontrado em: " . $configPath);
@@ -15,33 +13,26 @@ if (!file_exists($conexaoPath)) {
 if (!file_exists($salesModelPath)) {
     die("Erro: Arquivo salesModel.php não encontrado em: " . $salesModelPath);
 }
-if (!file_exists($productModelPath)) {
-    die("Erro: Arquivo productModel.php não encontrado em: " . $productModelPath);
-}
-if (!file_exists($customerModelPath)) {
-    die("Erro: Arquivo customerModel.php não encontrado em: " . $customerModelPath);
-}
 
 require_once $configPath;
 require_once $conexaoPath;
 require_once $salesModelPath;
-require_once $productModelPath;
-require_once $customerModelPath;
 
 class SalesController
 {
     private $sales;
+    private $pdo;
 
     public function __construct()
     {
         try {
-            $pdo = Conexao::getInstance();
+            $this->pdo = Conexao::getInstance();
 
             if (!Conexao::isConectado()) {
                 throw new Exception("Não foi possível estabelecer conexão com o banco de dados.");
             }
 
-            $this->sales = new SalesModel($pdo);
+            $this->sales = new SalesModel($this->pdo);
         } catch (Exception $e) {
             die("Erro no controlador: " . $e->getMessage());
         }
@@ -168,9 +159,9 @@ class SalesController
     public function buscarClientes()
     {
         try {
-            $pdo = Conexao::getInstance();
-            $CustomerModel = new CustomerModel($pdo);
-            return $CustomerModel->getAllCustomers();
+            $sql = "SELECT id, name FROM customers ORDER BY name ASC";
+            $stmt = $this->pdo->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             die("Erro ao buscar clientes: " . $e->getMessage());
         }
@@ -179,9 +170,9 @@ class SalesController
     public function buscarProdutos()
     {
         try {
-            $pdo = Conexao::getInstance();
-            $ProductModel = new ProductModel($pdo);
-            return $ProductModel->getAllProducts();
+            $sql = "SELECT id, name FROM products ORDER BY name ASC";
+            $stmt = $this->pdo->query($sql);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             die("Erro ao buscar produtos: " . $e->getMessage());
         }
