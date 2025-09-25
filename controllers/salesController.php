@@ -170,7 +170,7 @@ class SalesController
     public function buscarProdutos()
     {
         try {
-            $sql = "SELECT id, name FROM products ORDER BY name ASC";
+            $sql = "SELECT id, name, price FROM products ORDER BY name ASC";
             $stmt = $this->pdo->query($sql);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
