@@ -56,12 +56,70 @@ class SalesModel
     }
   }
 
+public function listar() {
+    try {
+        $sql = "
+            SELECT 
+                s.id, 
+                c.name AS customer_name, 
+                s.created_at,
+                GROUP_CONCAT(CONCAT(p.name, ' (', si.quantity, ')') SEPARATOR ', ') AS products,
+                SUM(si.quantity * si.unit_price) AS total_amount
+            FROM sales s
+            INNER JOIN customers c ON c.id = s.customer_id
+            LEFT JOIN sale_items si ON si.sale_id = s.id
+            LEFT JOIN products p ON p.id = si.product_id
+            GROUP BY s.id, c.name, s.created_at
+            ORDER BY s.created_at DESC
+        ";
+
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    } catch (Exception $e) {
+        die("Erro ao listar vendas: " . $e->getMessage());
+    }
+}
+
+
+
   public function getSaleById($id)
   {
     $stmt = $this->pdo->prepare("SELECT * FROM sales WHERE id = ?");
     $stmt->execute([$id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
+
+  public function create($customer_id, $items) {
+    // Verifica se cliente existe
+    $stmt = $this->pdo->prepare("SELECT id FROM customers WHERE id = :id");
+    $stmt->execute(['id' => $customer_id]);
+    if (!$stmt->fetch()) {
+        throw new Exception("Cliente não existe.");
+    }
+
+    // Cria a venda
+    $stmt = $this->pdo->prepare("INSERT INTO sales (customer_id, created_at) VALUES (:customer_id, NOW())");
+    $stmt->execute(['customer_id' => $customer_id]);
+    $saleId = $this->pdo->lastInsertId();
+
+    // Insere itens
+    foreach ($items as $item) {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO sales_items (sale_id, product_id, quantity, price)
+            VALUES (:sale_id, :product_id, :quantity, :price)
+        ");
+        $stmt->execute([
+            'sale_id'    => $saleId,
+            'product_id' => $item['product_id'],
+            'quantity'   => $item['quantity'],
+            'price'      => $item['price'],
+        ]);
+    }
+
+    return $saleId;
+}
+
 
   public function addSale()
   {
