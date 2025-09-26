@@ -80,8 +80,7 @@ class SalesController
     public function listar()
     {
         try {
-            $dados = $this->sales->getAllSales();
-            return $dados ?: [];
+            return $this->sales->listar();
         } catch (Exception $e) {
             die("Erro ao listar vendas: " . $e->getMessage());
         }
@@ -150,10 +149,26 @@ class SalesController
 
     public function buscarPorId($id)
     {
-        if (empty($id)) {
-            throw new Exception("ID inválido");
-        }
-        return $this->sales->buscarPorId($id);
+        $sql = "SELECT 
+                s.id AS sale_id,
+                s.customer_id,
+                c.name AS customer_name,
+                s.date,
+                s.total,
+                si.product_id,
+                p.name AS product_name,
+                si.quantity,
+                si.unit_price,
+                si.subtotal
+            FROM sales s
+            INNER JOIN customers c ON c.id = s.customer_id
+            LEFT JOIN sale_items si ON si.sale_id = s.id
+            LEFT JOIN products p ON p.id = si.product_id
+            WHERE s.id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function buscarClientes()
@@ -175,6 +190,21 @@ class SalesController
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             die("Erro ao buscar produtos: " . $e->getMessage());
+        }
+    }
+    
+    public function buscarItensVenda($saleId){
+        try {
+           $sql = "SELECT si.product_id, p.name AS product_name, si.quantity, si.unit_price, si.subtotal
+                FROM sale_items si
+                LEFT JOIN products p ON p.id = si.product_id
+                WHERE si.sale_id = :sale_id";
+           $stmt = $this->pdo->prepare($sql);
+           $stmt->execute([':sale_id' => $saleId]);
+           $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+           return $rows ?: [];
+        } catch (Exception $e) {
+            return [];
         }
     }
 }
