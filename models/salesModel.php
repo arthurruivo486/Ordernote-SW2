@@ -35,6 +35,28 @@ class SalesModel
     $stmt->execute();
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
+  
+  public function buscarItensVenda($saleId) {
+    try {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                si.product_id,
+                si.quantity,
+                si.unit_price,
+                si.subtotal,
+                p.name AS product_name
+            FROM sale_items si
+            JOIN products p ON p.id = si.product_id
+            WHERE si.sale_id = ?
+        ");
+        $stmt->execute([$saleId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Erro ao buscar itens da venda: " . $e->getMessage();
+        return [];
+    }
+}
+
 
   public function getAllSales()
   {
@@ -56,30 +78,27 @@ class SalesModel
     }
   }
 
-public function listar() {
+  public function listar() {
     try {
         $sql = "
             SELECT 
-                s.id, 
-                c.name AS customer_name, 
-                s.created_at,
-                GROUP_CONCAT(CONCAT(p.name, ' (', si.quantity, ')') SEPARATOR ', ') AS products,
-                SUM(si.quantity * si.unit_price) AS total_amount
+                s.id AS sale_id,
+                s.customer_id,
+                c.name AS customer_name,
+                s.total_amount,
+                s.created_at
             FROM sales s
-            INNER JOIN customers c ON c.id = s.customer_id
-            LEFT JOIN sale_items si ON si.sale_id = s.id
-            LEFT JOIN products p ON p.id = si.product_id
-            GROUP BY s.id, c.name, s.created_at
+            JOIN customers c ON c.id = s.customer_id
             ORDER BY s.created_at DESC
         ";
-
-        $stmt = $this->pdo->query($sql);
+        $stmt = $this->pdo->query($sql); // Executa a query
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     } catch (Exception $e) {
         die("Erro ao listar vendas: " . $e->getMessage());
     }
 }
+
 
 
 
@@ -91,34 +110,45 @@ public function listar() {
   }
 
   public function create($customer_id, $items) {
-    // Verifica se cliente existe
-    $stmt = $this->pdo->prepare("SELECT id FROM customers WHERE id = :id");
-    $stmt->execute(['id' => $customer_id]);
-    if (!$stmt->fetch()) {
-        throw new Exception("Cliente não existe.");
+    try {
+        $stmt = $this->pdo->prepare("INSERT INTO sales (customer_id, total) VALUES (?, 0)");
+        $stmt->execute([$customer_id]);
+        $saleId = $this->pdo->lastInsertId();
+
+        $total = 0;
+
+        foreach ($items as $item) {
+            $product_id = $item['product_id'];
+            $quantity = $item['quantity'];
+
+            $stmtProduct = $this->pdo->prepare("SELECT price FROM products WHERE id = ?");
+            $stmtProduct->execute([$product_id]);
+            $product = $stmtProduct->fetch();
+
+            if (!$product) continue;
+
+            $unit_price = $product['price'];
+            $subtotal = $unit_price * $quantity;
+            $total += $subtotal;
+
+            $stmtItem = $this->pdo->prepare(
+                "INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) 
+                 VALUES (?, ?, ?, ?, ?)"
+            );
+            $stmtItem->execute([$saleId, $product_id, $quantity, $unit_price, $subtotal]);
+        }
+
+        $stmtUpdate = $this->pdo->prepare("UPDATE sales SET total = ? WHERE id = ?");
+        $stmtUpdate->execute([$total, $saleId]);
+
+        return $saleId;
+
+    } catch (PDOException $e) {
+        echo "Erro ao registrar venda: " . $e->getMessage();
+        return false;
     }
-
-    // Cria a venda
-    $stmt = $this->pdo->prepare("INSERT INTO sales (customer_id, created_at) VALUES (:customer_id, NOW())");
-    $stmt->execute(['customer_id' => $customer_id]);
-    $saleId = $this->pdo->lastInsertId();
-
-    // Insere itens
-    foreach ($items as $item) {
-        $stmt = $this->pdo->prepare("
-            INSERT INTO sales_items (sale_id, product_id, quantity, price)
-            VALUES (:sale_id, :product_id, :quantity, :price)
-        ");
-        $stmt->execute([
-            'sale_id'    => $saleId,
-            'product_id' => $item['product_id'],
-            'quantity'   => $item['quantity'],
-            'price'      => $item['price'],
-        ]);
-    }
-
-    return $saleId;
 }
+
 
 
   public function addSale()

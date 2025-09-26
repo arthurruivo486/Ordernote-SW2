@@ -79,11 +79,7 @@ class SalesController
 
     public function listar()
     {
-        try {
-            return $this->sales->listar();
-        } catch (Exception $e) {
-            die("Erro ao listar vendas: " . $e->getMessage());
-        }
+        return $this->sales->listar();
     }
 
     public function edit()
@@ -101,6 +97,7 @@ class SalesController
                 if (empty($this->sales->id)) {
                     throw new Exception("ID inválido para edição.");
                 }
+
                 if ($this->sales->updateSale()) {
                     header("Location: ../views/sales/index.php");
                     exit();
@@ -167,6 +164,7 @@ class SalesController
             WHERE s.id = :id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -192,23 +190,40 @@ class SalesController
             die("Erro ao buscar produtos: " . $e->getMessage());
         }
     }
-    
-    public function buscarItensVenda($saleId){
-        try {
-           $sql = "SELECT si.product_id, p.name AS product_name, si.quantity, si.unit_price, si.subtotal
-                FROM sale_items si
-                LEFT JOIN products p ON p.id = si.product_id
-                WHERE si.sale_id = :sale_id";
-           $stmt = $this->pdo->prepare($sql);
-           $stmt->execute([':sale_id' => $saleId]);
-           $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-           return $rows ?: [];
-        } catch (Exception $e) {
-            return [];
+
+    public function buscarItensVenda($saleId)
+    {
+        return $this->sales->buscarItensVenda($saleId);
+    }
+
+    public function store()
+    {
+        if ($_SERVER["REQUEST_METHOD"] === 'POST') {
+            $customer_id = $_POST['customer_id'] ?? null;
+            $product_id  = $_POST['product_id'] ?? null;
+            $quantity    = $_POST['quantity'] ?? 1;
+
+            // Monta os itens da venda
+            $items = [
+                [
+                    'product_id' => $product_id,
+                    'quantity'   => $quantity
+                ]
+            ];
+
+            $saleId = $this->sales->create($customer_id, $items);
+
+            if ($saleId) {
+                header("Location: ../sales/salesList.php");
+                exit;
+            } else {
+                echo "Erro ao registrar venda.";
+            }
         }
     }
 }
 
+// Processamento de POST genérico
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
         $controller = new SalesController();
