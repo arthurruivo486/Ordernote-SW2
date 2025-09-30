@@ -39,44 +39,36 @@ $vendas = $controller->listar();
       <?php if (!empty($vendas) && is_array($vendas)): ?>
         <?php foreach ($vendas as $v): ?>
           <?php
-            // Identificador da venda — tenta diferentes nomes possíveis
             $saleId = $v['id'] ?? $v['sale_id'] ?? null;
             if (!$saleId) {
-                // pula linhas inválidas (evita warnings)
                 continue;
             }
 
-            // Nome do cliente (fallbacks)
             $customerName = $v['customer_name'] ?? $v['name'] ?? '-';
 
-            // Total (se existir)
             $total = isset($v['total_amount']) ? number_format((float)$v['total_amount'], 2, ',', '.') : '-';
 
-            // Data (fallback)
             $date = $v['created_at'] ?? $v['date'] ?? '-';
 
-            // Produtos: se já vierem no resultado use, senão busque os itens via controller
-            $productsDisplay = '';
-            if (isset($v['product_name']) || isset($v['quantity'])) {
-                // Caso a query já tenha retornado um product_name/quantity
-                $pname = $v['product_name'] ?? '-';
-                $pqty  = $v['quantity'] ?? '-';
-                $productsDisplay = htmlspecialchars($pname) . ' (' . htmlspecialchars($pqty) . ')';
-            } else {
-                // Busca itens da venda (pode retornar [] se não houver sale_items)
-                $itens = $controller->buscarItensVenda($saleId);
-                if (!empty($itens)) {
-                    $parts = [];
-                    foreach ($itens as $it) {
-                        $iname = $it['product_name'] ?? ('ID ' . ($it['product_id'] ?? '?'));
-                        $iqty  = $it['quantity'] ?? 0;
-                        $parts[] = htmlspecialchars($iname) . ' (' . (int)$iqty . ')';
-                    }
-                    $productsDisplay = implode(', ', $parts);
-                } else {
-                    $productsDisplay = '-';
-                }
-            }
+// Produtos (se já vierem no array como 'products')
+$productsDisplay = '-';
+if (!empty($v['products'])) {
+    // Caso já venha como string formatada
+    if (is_string($v['products'])) {
+        $productsDisplay = htmlspecialchars($v['products']);
+    }
+    // Caso venha como array (lista de itens)
+    elseif (is_array($v['products'])) {
+        $parts = [];
+        foreach ($v['products'] as $p) {
+            $pname = $p['product_name'] ?? '-';
+            $pqty  = $p['quantity'] ?? 0;
+            $parts[] = htmlspecialchars($pname) . ' (' . (int)$pqty . ')';
+        }
+        $productsDisplay = implode(', ', $parts);
+    }
+}
+
 
             // URLs seguras para ação (só cria hrefs se id existir)
             $editHref = $saleId ? "salesUpdate.php?id=" . urlencode($saleId) : '#';

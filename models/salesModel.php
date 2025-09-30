@@ -35,6 +35,51 @@ class SalesModel
     $stmt->execute();
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
+
+  public function createSale($customerId, $userId, $products)
+{
+    $pdo = $this->db;
+
+    // 1. Cria venda inicial
+    $stmt = $pdo->prepare("INSERT INTO sales (customer_id, user_id, created_at, total_amount) VALUES (?, ?, NOW(), 0)");
+    $stmt->execute([$customerId, $userId]);
+    $saleId = $pdo->lastInsertId();
+
+    $total = 0;
+
+    // 2. Percorre produtos
+    foreach ($products as $productId => $data) {
+        if (!isset($data['selected'])) continue;
+
+        $quantity = (int)$data['quantity'];
+
+        // pega produto
+        $stmt = $pdo->prepare("SELECT price, stock FROM products WHERE id = ?");
+        $stmt->execute([$productId]);
+        $product = $stmt->fetch();
+
+        if (!$product || $product['stock'] < $quantity) continue;
+
+        $unitPrice = $product['price'];
+        $subtotal = $unitPrice * $quantity;
+        $total += $subtotal;
+
+        // insere em sale_items
+        $stmt = $pdo->prepare("INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$saleId, $productId, $quantity, $unitPrice, $subtotal]);
+
+        // atualiza estoque
+        $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+        $stmt->execute([$quantity, $productId]);
+    }
+
+    // 3. Atualiza total da venda
+    $stmt = $pdo->prepare("UPDATE sales SET total_amount = ? WHERE id = ?");
+    $stmt->execute([$total, $saleId]);
+
+    return $saleId;
+}
+
   
   public function buscarItensVenda($saleId) {
     try {

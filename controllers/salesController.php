@@ -77,6 +77,36 @@ class SalesController
         }
     }
 
+    public function create()
+    {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $customerId = $_POST['customer_id'];
+        $userId = 1; // ou o usuário logado
+        $products = $_POST['products'] ?? [];
+
+        require_once __DIR__ . '/../models/SalesModel.php';
+        $salesModel = new SalesModel();
+
+        $salesModel->createSale($customerId, $userId, $products);
+
+        header("Location: ../views/salesList.php");
+        exit;
+    } else {
+        // carrega form
+        require_once __DIR__ . '/../models/CustomersModel.php';
+        require_once __DIR__ . '/../models/ProductsModel.php';
+
+        $customersModel = new CustomersModel();
+        $productsModel = new ProductsModel();
+
+        $customers = $customersModel->listar();
+        $products = $productsModel->getAllProducts();
+
+        require __DIR__ . '/../views/salesAdd.php';
+    }
+}
+
+
     public function listar()
     {
         return $this->sales->listar();
