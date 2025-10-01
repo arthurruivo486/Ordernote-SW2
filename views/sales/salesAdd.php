@@ -10,6 +10,24 @@
     body {background-color: #f0f1f3}
     .card-add {background: #fff; padding: 2rem; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 2rem auto;}
   </style>
+  <script>
+document.querySelectorAll('.qtd-input').forEach(input => {
+    input.addEventListener('input', atualizarTotal);
+});
+
+function atualizarTotal() {
+    let total = 0;
+    document.querySelectorAll('.qtd-input').forEach(input => {
+        let qtd = parseInt(input.value) || 0;
+        let preco = parseFloat(input.dataset.preco);
+        total += qtd * preco;
+    });
+    
+    document.getElementById('totalCompra').innerText = 
+        'R$ ' + total.toFixed(2).replace('.', ',');
+    document.getElementById('total_amount').value = total.toFixed(2);
+}
+</script>
 </head>
 <body>
 <div class="container">
@@ -19,54 +37,73 @@
     $customers = $controller->buscarClientes();
     $products = $controller->buscarProdutos();
   ?>
-  <div class="card-add">
-    <h3 class="fw-bold text-success mb-4">
-      <i class="bi bi-plus-circle me-2"></i> Registrar Venda
-    </h3>
-    <form action="../../controllers/salesController.php" method="POST">
-      <!-- Cliente -->
-      <div class="mb-3">
-        <label for="customer_id" class="form-label">Cliente</label>
-        <select name="customer_id" id="customer_id" class="form-select" required>
-          <option value="">Selecione o cliente</option>
-          <?php foreach ($customers as $c): ?>
-            <option value="<?= $c['id']; ?>">
-              <?= htmlspecialchars($c['name']); ?>
+  <h2><i class="fas fa-plus-circle"></i> Registrar Venda</h2>
+
+<form action="../../controllers/salesController.php?action=create" method="POST">
+    <!-- Cliente -->
+    <div class="form-group">
+    <label for="customer_id">Cliente</label>
+    <select name="customer_id" id="customer_id" required>
+        <option value="">Selecione um cliente</option>
+        <?php foreach ($customers as $cliente): ?>
+            <option value="<?= $cliente['id'] ?>">
+                <?= htmlspecialchars($cliente['name']) ?>
             </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
+        <?php endforeach; ?>
+    </select>
+</div>
 
-      <!-- Produto -->
-      <div class="mb-3">
-        <label for="product_id" class="form-label">Produto</label>
-        <select name="product_id" id="product_id" class="form-select" required>
-          <option value="">Selecione o produto</option>
-          <?php foreach ($products as $p): ?>
-            <option value="<?= $p['id']; ?>">
-              <?= htmlspecialchars($p['name']); ?> - R$ <?= number_format($p['price'], 2, ',', '.'); ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
+    <!-- Lista de Produtos -->
+    <h3>Produtos</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Produto</th>
+                <th>Preço</th>
+                <th>Estoque</th>
+                <th>Quantidade</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tbody>
+    <?php foreach ($products as $produto): ?>
+        <tr>
+            <td><?= htmlspecialchars($produto['name']); ?></td>
+            <td>R$ <?= number_format($produto['price'], 2, ',', '.'); ?></td>
+            <td><?= isset($produto['stock']) ? (int)$produto['stock'] : 0; ?></td>
+            <td>
+                <input 
+                    type="number" 
+                    name="quantidades[<?= $produto['id']; ?>]" 
+                    min="0" 
+                    max="<?= isset($produto['stock']) ? (int)$produto['stock'] : 0; ?>" 
+                    value="0" 
+                    class="qtd-input"
+                    data-preco="<?= $produto['price']; ?>"
+                >
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
 
-      <!-- Quantidade -->
-      <div class="mb-3">
-        <label for="quantity" class="form-label">Quantidade</label>
-        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
-      </div>
 
-      <input type="hidden" name="acao" value="incluir">
+        </tbody>
+    </table>
 
-      <div class="d-flex justify-content-between mt-4">
-        <a href="salesView.php" class="btn btn-secondary">
-          <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
-        </a>
-        <button class="btn btn-success text-white" type="submit">
-          <i class="bi bi-check-circle me-1"></i> Registrar
-        </button>
-      </div>
-    </form>
+    <!-- Total -->
+    <div class="form-group">
+        <label>Total da Compra:</label>
+        <h3 id="totalCompra">R$ 0,00</h3>
+        <input type="hidden" name="total_amount" id="total_amount" value="0">
+    </div>
+
+    <!-- Botões -->
+    <div class="form-actions">
+        <a href="salesList.php" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-success">Registrar</button>
+    </div>
+</form>
+
   </div>
 </div>
 </body>
