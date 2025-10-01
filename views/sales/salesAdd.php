@@ -42,16 +42,16 @@ function atualizarTotal() {
 <form action="../../controllers/salesController.php?action=create" method="POST">
     <!-- Cliente -->
     <div class="form-group">
-        <label for="customer_id">Cliente</label>
-        <select name="customer_id" id="customer_id" required>
-            <option value="">Selecione um cliente</option>
-            <?php foreach ($clientes as $cliente): ?>
-                <option value="<?= $cliente['id'] ?>">
-                    <?= htmlspecialchars($cliente['name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
+    <label for="customer_id">Cliente</label>
+    <select name="customer_id" id="customer_id" required>
+        <option value="">Selecione um cliente</option>
+        <?php foreach ($customers as $cliente): ?>
+            <option value="<?= $cliente['id'] ?>">
+                <?= htmlspecialchars($cliente['name']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
 
     <!-- Lista de Produtos -->
     <h3>Produtos</h3>
@@ -65,28 +65,26 @@ function atualizarTotal() {
             </tr>
         </thead>
         <tbody>
-        <?php foreach (($produtos ?? $products ?? []) as $produto): ?>
-    <?php 
-      $stock = isset($produto['stock']) ? (int)$produto['stock'] : 0;
-      $price = $produto['price'] ?? 0;
-    ?>
-    <tr>
-        <td><?= htmlspecialchars($produto['name'] ?? '-'); ?></td>
-        <td>R$ <?= number_format((float)$price, 2, ',', '.'); ?></td>
-        <td><?= $stock !== 0 ? $stock : '-'; ?></td>
-        <td>
-            <input 
-                type="number" 
-                name="quantidades[<?= htmlspecialchars($produto['id'] ?? 0); ?>]" 
-                min="0" 
-                max="<?= $stock; ?>" 
-                value="0" 
-                class="qtd-input"
-                data-preco="<?= htmlspecialchars($price); ?>"
-            >
-        </td>
-    </tr>
-<?php endforeach; ?>
+        <tbody>
+    <?php foreach ($products as $produto): ?>
+        <tr>
+            <td><?= htmlspecialchars($produto['name']); ?></td>
+            <td>R$ <?= number_format($produto['price'], 2, ',', '.'); ?></td>
+            <td><?= isset($produto['stock']) ? (int)$produto['stock'] : 0; ?></td>
+            <td>
+                <input 
+                    type="number" 
+                    name="quantidades[<?= $produto['id']; ?>]" 
+                    min="0" 
+                    max="<?= isset($produto['stock']) ? (int)$produto['stock'] : 0; ?>" 
+                    value="0" 
+                    class="qtd-input"
+                    data-preco="<?= $produto['price']; ?>"
+                >
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
 
 
         </tbody>
