@@ -91,6 +91,10 @@ class SalesController
 
         header("Location: ../views/salesList.php");
         exit;
+        if (isset($_GET['action']) && $_GET['action'] === 'create') {
+            $controller = new SalesController();
+            $controller->create();
+        }
     } else {
         // carrega form
         require_once __DIR__ . '/../models/CustomersModel.php';

@@ -39,7 +39,7 @@ function atualizarTotal() {
   ?>
   <h2><i class="fas fa-plus-circle"></i> Registrar Venda</h2>
 
-<form action="processaVenda.php" method="POST">
+<form action="../../controllers/salesController.php?action=create" method="POST">
     <!-- Cliente -->
     <div class="form-group">
         <label for="customer_id">Cliente</label>
@@ -65,24 +65,30 @@ function atualizarTotal() {
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($products as $produto): ?>
-                <tr>
-                    <td><?= htmlspecialchars($produto['name']); ?></td>
-                    <td>R$ <?= number_format($produto['price'], 2, ',', '.'); ?></td>
-                    <td><?= $produto['stock']; ?></td>
-                    <td>
-                        <input 
-                            type="number" 
-                            name="quantidades[<?= $produto['id']; ?>]" 
-                            min="0" 
-                            max="<?= $produto['stock']; ?>" 
-                            value="0" 
-                            class="qtd-input"
-                            data-preco="<?= $produto['price']; ?>"
-                        >
-                    </td>
-                </tr>
-            <?php endforeach; ?>
+        <?php foreach (($produtos ?? $products ?? []) as $produto): ?>
+    <?php 
+      $stock = isset($produto['stock']) ? (int)$produto['stock'] : 0;
+      $price = $produto['price'] ?? 0;
+    ?>
+    <tr>
+        <td><?= htmlspecialchars($produto['name'] ?? '-'); ?></td>
+        <td>R$ <?= number_format((float)$price, 2, ',', '.'); ?></td>
+        <td><?= $stock !== 0 ? $stock : '-'; ?></td>
+        <td>
+            <input 
+                type="number" 
+                name="quantidades[<?= htmlspecialchars($produto['id'] ?? 0); ?>]" 
+                min="0" 
+                max="<?= $stock; ?>" 
+                value="0" 
+                class="qtd-input"
+                data-preco="<?= htmlspecialchars($price); ?>"
+            >
+        </td>
+    </tr>
+<?php endforeach; ?>
+
+
         </tbody>
     </table>
 
